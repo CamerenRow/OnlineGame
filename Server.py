@@ -5,6 +5,25 @@ port = 5555
 
 
 Clients = []
+
+def Chat_Room(client_socket, client_address):
+   print(f'Connected to {client_address}')
+   while True:
+      msg = client_socket.recv(1024).decode()
+
+      if not msg:
+         socket_server.close()
+         client_socket.close()
+
+
+      if msg.startswith('/CoinFlip'):
+            t = threading.Thread(target=Handle_Client, args=(client_socket, client_address, player_id, players, choices))
+            t.start()
+
+      for client in Clients:
+         if client != client_socket:
+           client.sendall(msg.encode())
+      
 def Handle_Client(client_socket, client_address, player_id, players, choices):
     client_socket.sendall(f"Welcome, Player {player_id}!\n".encode())
 
@@ -56,9 +75,7 @@ while True:
 
     players[player_id] = client_socket
 
-    t =  threading.Thread(target=Handle_Client, args=(client_socket, client_address, player_id, players, choices))
+    t =  threading.Thread(target=Chat_Room, args=(client_socket, client_address))
     t.start()
     player_id += 1
-
-
 
